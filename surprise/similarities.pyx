@@ -75,6 +75,11 @@ def cosine(n_x, yr, min_support):
     sqj = np.zeros((n_x, n_x), np.double)
     sim = np.zeros((n_x, n_x), np.double)
 
+    # 对于一个用户，如果购买了多个商品，那么，就做多次的加和
+    # 算作两个商品，只是这两个商品的id不同
+    # 比如，一个用户购买了A,B,C,A,评分是（0.1，0.2，0.3，0.4），另一个用户同样也是，但是评分是
+    # （0.5，0.6，0.7，0.8），那么计算cos相似度就是
+    # （0.1*0.5+0.2*0.6+0.3*0.7+0.4*0.8）/ （0.1^2 + 0.2^2 + 0.3^2 + 0.4^2）*(0.5^2+0.6^2+0.7^2 +0.8^)
     for y, y_ratings in iteritems(yr):
         for xi, ri in y_ratings:
             for xj, rj in y_ratings:
