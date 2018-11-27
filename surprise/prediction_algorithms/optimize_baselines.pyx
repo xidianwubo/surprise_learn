@@ -43,12 +43,14 @@ def baseline_als(self):
             for (u, r) in self.trainset.ir[i]:
                 dev_i += r - global_mean - bu[u]
 
+            #拿到这个物品被打偏了多少分
             bi[i] = dev_i / (reg_i + len(self.trainset.ir[i]))
 
         for u in self.trainset.all_users():
             dev_u = 0
             for (i, r) in self.trainset.ur[u]:
                 dev_u += r - global_mean - bi[i]
+            # 知道这个人对物品打分，相对于平均值偏离多少，并且还要算上修正后的物品分值偏离
             bu[u] = dev_u / (reg_u + len(self.trainset.ur[u]))
 
     return bu, bi

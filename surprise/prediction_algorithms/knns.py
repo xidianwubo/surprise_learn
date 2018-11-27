@@ -1,3 +1,4 @@
+# coding=utf-8
 """
 the :mod:`knns` module includes some k-NN inspired algorithms.
 """
@@ -86,6 +87,11 @@ class KNNBasic(SymmetricAlgo):
             similarity, etc.  Default is True.
     """
 
+    # KNNBasic是最基础的协同过滤算法， 具体的基本原理可以参考这里
+    # https://www.zybuluo.com/xtccc/note/200979
+    # 这篇文章有些不明确的地方，关于相似度如何再矩阵里进行计算，其实是这样的，以
+    # cos相似度为例，如果是user_based的相似度矩阵，计算两个人的cos相似度，其实就是遍历
+    # 所有物品-用户的兴趣列表，计算cos
     def __init__(self, k=40, min_k=1, sim_options={}, verbose=True, **kwargs):
 
         SymmetricAlgo.__init__(self, sim_options=sim_options, verbose=verbose,
@@ -164,6 +170,10 @@ class KNNWithMeans(SymmetricAlgo):
             similarity, etc.  Default is True.
     """
 
+    # KNNWithMeans 是为了解决如下问题，比如和我相近的两个用户，一个人对A物品兴趣一般，
+    # 但是由于其评分习惯，所以评50分，另一个也是觉得一般，但是他有可能只给10分，为了解决
+    # 每个人评分的差异性，对所有人的评分，减去其对其它物品的平均评分，最终可以得到
+    # 相对比较公平的结果
     def __init__(self, k=40, min_k=1, sim_options={}, verbose=True, **kwargs):
 
         SymmetricAlgo.__init__(self, sim_options=sim_options,
@@ -263,6 +273,14 @@ class KNNBaseline(SymmetricAlgo):
 
     """
 
+    # https://my.oschina.net/keyven/blog/513850
+    # 看的不是很明白，基本上bi表示物品被打分时的偏差，bu表示一个人再打分时，相对于其他人的不同
+    # 迭代若干次，得到相应的偏差，并且，越多人对一个物品打分，那么这个物品被错误打分的可能性越低
+    # 一个人如果经常买东西，那么他打分错误的可能性就越小
+
+    # 算法的公式基本上就是先计算用户当前打分和总体打分的偏离程度，然后再计算
+    # 和该用户相似的人对于物品打分（考虑自身偏离程度和物品偏离程度）的最后打分
+    # 然后将这两部分相加
     def __init__(self, k=40, min_k=1, sim_options={}, bsl_options={},
                  verbose=True, **kwargs):
 
@@ -357,6 +375,13 @@ class KNNWithZScore(SymmetricAlgo):
             similarity, etc.  Default is True.
     """
 
+    # 这个比较难以解释，我个人感觉就是一个浮动范围的意思，就是说，
+    # 在KNNWithMeans的基础之上，我们还需要做其它的事情，比如
+    # 我们需要对浮动范围做一个调整，比如我们用KNNWithMeans计算的方法就是在自己均值的基础之上，加和
+    # 和我相似的人对于当前商品打分的浮动分数，但是当前人的浮动范围可能大，或者也可能小
+    # 比如，一个人常年打三分，突然，对这个商品打了四分，那么，这个和一个人常年打2，4，6，8，突然这个物品打了四分，
+    # 意义是不一样的，所以，需要对分值的差再除以方差，才能得到用户对于当前商品的真实评价，然后再乘以当前用户的方差
+    # 把这层意义映射到当前的用户，再和均值进行加和，得到相对合理的结果
     def __init__(self, k=40, min_k=1, sim_options={}, verbose=True, **kwargs):
 
         SymmetricAlgo.__init__(self, sim_options=sim_options, verbose=verbose,
